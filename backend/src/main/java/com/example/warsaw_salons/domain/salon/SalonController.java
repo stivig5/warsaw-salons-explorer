@@ -44,6 +44,7 @@ public class SalonController {
         return ResponseEntity.ok(salonService.update(id, request));
     }
 
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         salonService.delete(id);
         return ResponseEntity.noContent().build();
