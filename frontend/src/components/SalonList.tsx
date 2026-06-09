@@ -45,6 +45,21 @@ const SalonList: React.FC = () => {
         }
     };
 
+    const handleDeleteSalon = async (id: number) => {
+        if (!window.confirm("Are you sure you want to delete this salon?")) return;
+        
+        try {
+            await salonService.deleteSalon(id);
+            setSalons(prevSalons => prevSalons.filter(s => s.id !== id));
+            if (selectedSalon?.id === id) {
+                setSelectedSalon(null);
+            }
+        } catch (err) {
+            console.error("Error deleting salon:", err);
+            alert("Failed to delete salon. Check server logs.");
+        }
+    };
+
     if (loading) {
         return <div className="loading">Loading real data from PostgreSQL...</div>;
     }
@@ -162,7 +177,10 @@ const SalonList: React.FC = () => {
                                 </span>
                             </div>
 
-                            <div className="action-buttons-container">
+                            <div className="action-buttons-container multi-action">
+                                <button className="delete-btn" onClick={() => handleDeleteSalon(selectedSalon.id)}>
+                                    Delete
+                                </button>
                                 <button className="close-details-btn" onClick={() => setSelectedSalon(null)}>
                                     Close details
                                 </button>
