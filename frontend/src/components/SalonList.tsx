@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import salonService from '../services/salonService';
-import type { Salon } from '../types/salon';
+import type { Salon, SalonMutateRequest } from '../types/salon';
 
 const SalonList: React.FC = () => {
     const [salons, setSalons] = useState<Salon[]>([]);
@@ -11,6 +11,11 @@ const SalonList: React.FC = () => {
     const [detailsLoading, setDetailsLoading] = useState<boolean>(false);
 
     const [filterDistrict, setFilterDistrict] = useState<string>('');
+
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [editForm, setEditForm] = useState<SalonMutateRequest>({
+        name: '', address: '', district: '', phoneNumber: '', website: '', servicesOffered: '', priceRange: '', rating: 0, numberOfReviews: 0
+    });
 
     useEffect(() => {
         loadSalons();
@@ -35,6 +40,7 @@ const SalonList: React.FC = () => {
     const handleSelectSalon = async (id: number) => {
         try {
             setDetailsLoading(true);
+            setIsEditing(false);
             const fullDetails = await salonService.getSalonById(id);
             setSelectedSalon(fullDetails);
         } catch (err) {
@@ -57,6 +63,43 @@ const SalonList: React.FC = () => {
         } catch (err) {
             console.error("Error deleting salon:", err);
             alert("Failed to delete salon. Check server logs.");
+        }
+    };
+
+    const startEditing = () => {
+        if (!selectedSalon) return;
+        setEditForm({
+            name: selectedSalon.name || '',
+            address: selectedSalon.address || '',
+            district: selectedSalon.district || '',
+            phoneNumber: selectedSalon.phoneNumber || '',
+            website: selectedSalon.website || '',
+            servicesOffered: selectedSalon.servicesOffered || '',
+            priceRange: selectedSalon.priceRange || '',
+            rating: selectedSalon.rating || 0,
+            numberOfReviews: selectedSalon.numberOfReviews || 0
+        });
+        setIsEditing(true);
+    };
+
+    const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setEditForm(prev => ({
+            ...prev,
+            [name]: name === 'rating' || name === 'numberOfReviews' ? Number(value) : value
+        }));
+    };
+
+    const handleUpdateSubmit = async () => {
+        if (!selectedSalon) return;
+        try {
+            const updatedSalon = await salonService.updateSalon(selectedSalon.id, editForm);
+            setSelectedSalon(updatedSalon); 
+            setSalons(prev => prev.map(s => s.id === updatedSalon.id ? updatedSalon : s)); // Aktualizujemy tabelę
+            setIsEditing(false); 
+        } catch (err) {
+            console.error("Error updating salon:", err);
+            alert("Failed to update salon.");
         }
     };
 
@@ -129,62 +172,101 @@ const SalonList: React.FC = () => {
                 {!detailsLoading && selectedSalon && (
                     <div className="salon-details-card">
                         <div className="salon-details-body">
-                            <div className="salon-details-header">
-                                <h3>{selectedSalon.name}</h3>
-                                <span className="details-badge">{selectedSalon.district}</span>
-                            </div> 
-                            
-                            <h4 className="details-sub-header">Location & Contact</h4>
-                            
-                            <div className="details-data-row">
-                                <span className="details-data-label">📍 Address</span>
-                                <span className="details-data-value">{selectedSalon.address}</span>
-                            </div>
+                            {isEditing ? (
+                                <div className="edit-form-container">
+                                    <h3>Edit Salon</h3>
+                                    
+                                    <label>Name</label>
+                                    <input name="name" value={editForm.name} onChange={handleEditChange} />
 
-                            <div className="details-data-row">
-                                <span className="details-data-label">📞 Phone</span>
-                                <span className="details-data-value">{selectedSalon.phoneNumber}</span>
-                            </div>
+                                    <label>District</label>
+                                    <input name="district" value={editForm.district} onChange={handleEditChange} />
 
-                            {selectedSalon.website && (
-                                <div className="details-data-row">
-                                    <span className="details-data-label">🌐 Website</span>
-                                    <span className="details-data-value">
-                                        <a href={selectedSalon.website} target="_blank" rel="noopener noreferrer" className="visit-website-link">
-                                            Visit website
-                                        </a>
-                                    </span>
+                                    <label>Address</label>
+                                    <input name="address" value={editForm.address} onChange={handleEditChange} />
+
+                                    <label>Phone Number</label>
+                                    <input name="phoneNumber" value={editForm.phoneNumber} onChange={handleEditChange} />
+
+                                    <label>Website</label>
+                                    <input name="website" value={editForm.website} onChange={handleEditChange} />
+
+                                    <label>Services Offered</label>
+                                    <input name="servicesOffered" value={editForm.servicesOffered} onChange={handleEditChange} />
+
+                                    <div className="edit-row">
+                                        <div className="edit-col">
+                                            <label>Price Range</label>
+                                            <input name="priceRange" value={editForm.priceRange} onChange={handleEditChange} />
+                                        </div>
+                                        <div className="edit-col">
+                                            <label>Rating</label>
+                                            <input type="number" step="0.1" name="rating" value={editForm.rating} onChange={handleEditChange} />
+                                        </div>
+                                    </div>
+
+                                    <div className="action-buttons-container split-buttons">
+                                        <button className="save-btn" onClick={handleUpdateSubmit}>Save Changes</button>
+                                        <button className="cancel-btn" onClick={() => setIsEditing(false)}>Cancel</button>
+                                    </div>
                                 </div>
+                            ) : (
+                                <>
+                                    <div className="salon-details-header">
+                                        <h3>{selectedSalon.name}</h3>
+                                        <span className="details-badge">{selectedSalon.district}</span>
+                                    </div>
+                                    
+                                    <h4 className="details-sub-header">Location & Contact</h4>
+                                    
+                                    <div className="details-data-row">
+                                        <span className="details-data-label">📍 Address</span>
+                                        <span className="details-data-value">{selectedSalon.address}</span>
+                                    </div>
+
+                                    <div className="details-data-row">
+                                        <span className="details-data-label">📞 Phone</span>
+                                        <span className="details-data-value">{selectedSalon.phoneNumber}</span>
+                                    </div>
+
+                                    {selectedSalon.website && (
+                                        <div className="details-data-row">
+                                            <span className="details-data-label">🌐 Website</span>
+                                            <span className="details-data-value">
+                                                <a href={selectedSalon.website} target="_blank" rel="noopener noreferrer" className="visit-website-link">
+                                                    Visit website
+                                                </a>
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    <h4 className="details-sub-header">Details & Rating</h4>
+                                    
+                                    <div className="details-data-row">
+                                        <span className="details-data-label">✂️ Services</span>
+                                        <span className="details-data-value">{selectedSalon.servicesOffered}</span>
+                                    </div>
+
+                                    <div className="details-data-row">
+                                        <span className="details-data-label">💰 Price range</span>
+                                        <span className="details-data-value">{selectedSalon.priceRange}</span>
+                                    </div>
+
+                                    <div className="details-data-row">
+                                        <span className="details-data-label">⭐ Rating</span>
+                                        <span className="details-data-value">
+                                            <span className="rating-stars">{"★".repeat(Math.round(selectedSalon.rating))}</span>
+                                            {selectedSalon.rating} / 5.0 ({selectedSalon.numberOfReviews} reviews)
+                                        </span>
+                                    </div>
+
+                                    <div className="action-buttons-container multi-action">
+                                        <button className="edit-btn" onClick={startEditing}>Edit</button>
+                                        <button className="delete-btn" onClick={() => handleDeleteSalon(selectedSalon.id)}>Delete</button>
+                                        <button className="close-details-btn" onClick={() => setSelectedSalon(null)}>Close details</button>
+                                    </div>
+                                </>
                             )}
-
-                            <h4 className="details-sub-header">Details & Rating</h4>
-                            
-                            <div className="details-data-row">
-                                <span className="details-data-label">✂️ Services</span>
-                                <span className="details-data-value">{selectedSalon.servicesOffered}</span>
-                            </div>
-
-                            <div className="details-data-row">
-                                <span className="details-data-label">💰 Price range</span>
-                                <span className="details-data-value">{selectedSalon.priceRange}</span>
-                            </div>
-
-                            <div className="details-data-row">
-                                <span className="details-data-label">⭐ Rating</span>
-                                <span className="details-data-value">
-                                    <span className="rating-stars">{"★".repeat(Math.round(selectedSalon.rating))}</span>
-                                    {selectedSalon.rating} / 5.0 ({selectedSalon.numberOfReviews} reviews)
-                                </span>
-                            </div>
-
-                            <div className="action-buttons-container multi-action">
-                                <button className="delete-btn" onClick={() => handleDeleteSalon(selectedSalon.id)}>
-                                    Delete
-                                </button>
-                                <button className="close-details-btn" onClick={() => setSelectedSalon(null)}>
-                                    Close details
-                                </button>
-                            </div>
                         </div>
                     </div>
                 )}
