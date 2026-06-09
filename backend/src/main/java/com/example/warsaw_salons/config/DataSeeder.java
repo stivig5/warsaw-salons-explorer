@@ -43,7 +43,7 @@ public class DataSeeder implements CommandLineRunner {
         String url = "https://overpass-api.de/api/interpreter";
 
         // Overpass QL query fetching hairdressers and beauty salons in Warsaw
-        String query = "[out:json];\n" +
+        String query = "[out:json][timeout:60];\n" +
                 "area[\"name\"=\"Warszawa\"]->.searchArea;\n" +
                 "(\n" +
                 "  node[\"shop\"=\"hairdresser\"](area.searchArea);\n" +
