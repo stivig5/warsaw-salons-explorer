@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Salon, SalonMutateRequest, PageResponse } from '../types/salon';
+import type { Salon, SalonMutateRequest, PageResponse } from '../types/salon';
 
 const API_BASE_URL = 'http://localhost:8080/salons';
 
