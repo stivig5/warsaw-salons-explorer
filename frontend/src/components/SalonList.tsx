@@ -10,6 +10,8 @@ const SalonList: React.FC = () => {
     const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
     const [detailsLoading, setDetailsLoading] = useState<boolean>(false);
 
+    const [filterDistrict, setFilterDistrict] = useState<string>('');
+
     useEffect(() => {
         loadSalons();
     }, []);
@@ -51,24 +53,31 @@ const SalonList: React.FC = () => {
         return <div className="error">{error}</div>;
     }
 
+    const filteredSalons = salons.filter(salon => 
+        salon.district.toLowerCase().includes(filterDistrict.toLowerCase())
+    );
+
     return (
         <div className="salon-container-layout">
             {/* Salon List Section */}
             <div className="salon-list-section">
-                <h2>Available Salons in Warsaw</h2>
+                <div className="list-header">
+                    <h2>Available Salons in Warsaw</h2>
+                    <input 
+                        type="text" 
+                        placeholder="🔍 Filter by district (e.g. Mokotów)..." 
+                        value={filterDistrict}
+                        onChange={(e) => setFilterDistrict(e.target.value)}
+                        className="filter-input"
+                    />
+                </div>
+                
                 <div className="table-responsive">
                     <table className="salon-table">
                         <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>District</th>
-                                <th>Price Range</th>
-                                <th>Rating</th>
-                            </tr>
                         </thead>
                         <tbody>
-                            {salons.map((salon) => (
+                            {filteredSalons.map((salon) => (
                                 <tr 
                                     key={salon.id} 
                                     onClick={() => handleSelectSalon(salon.id)}
@@ -81,6 +90,11 @@ const SalonList: React.FC = () => {
                                     <td>{salon.rating} ⭐</td>
                                 </tr>
                             ))}
+                            {filteredSalons.length === 0 && (
+                                <tr>
+                                    <td colSpan={5} style={{textAlign: 'center', padding: '20px'}}>No salons found matching your criteria.</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
