@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Salon, SalonMutateRequest, PageResponse } from '../types/salon';
 
-const API_BASE_URL = 'http://localhost:8080/salons';
+const API_BASE_URL = 'http://localhost:8080/api/salons';
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
