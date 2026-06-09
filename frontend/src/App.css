@@ -446,3 +446,84 @@ header p {
   box-sizing: border-box;
   width: 100%;
 }
+
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 15px 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f2f6;
+}
+
+.page-size-selector label {
+  color: #747d8c;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.page-size-selector select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #dfe4ea;
+  background-color: #fcfcfd;
+  color: #2f3542;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.page-size-selector select:focus {
+  border-color: #3498db;
+}
+
+.page-navigation {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.page-info {
+  color: #57606f;
+  font-size: 0.95rem;
+}
+
+.page-info strong {
+  color: #2f3542;
+}
+
+.page-btn {
+  padding: 8px 16px;
+  background-color: #eaf4fc;
+  color: #2980b9;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.page-btn:hover:not(:disabled) {
+  background-color: #3498db;
+  color: white;
+}
+
+.page-btn:disabled {
+  background-color: #f1f2f6;
+  color: #a4b0be;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .pagination-controls {
+    flex-direction: column;
+    gap: 15px;
+  }
+}

@@ -17,24 +17,37 @@ const SalonList: React.FC = () => {
         name: '', address: '', district: '', phoneNumber: '', website: '', servicesOffered: '', priceRange: '', rating: 0, numberOfReviews: 0
     });
 
+    const [currentPage, setCurrentPage] = useState<number>(0);
+    const [pageSize, setPageSize] = useState<number>(10); 
+    const [totalPages, setTotalPages] = useState<number>(1);
+
     useEffect(() => {
         loadSalons();
-    }, []);
+    }, [currentPage, pageSize]);
 
     const loadSalons = async () => {
         try {
             setLoading(true);
             setError(null);
-            const data = await salonService.getSalons(0, 100);
+            const data = await salonService.getSalons(currentPage, pageSize);
             
             const salonsArray = data.content || data || [];
             setSalons(salonsArray);
+
+            if (data.totalPages !== undefined) {
+                setTotalPages(data.totalPages);
+            }
         } catch (err) {
             console.error("Error fetching salons:", err);
             setError("Failed to load salons from the server.");
         } finally {
             setLoading(false);
         }
+    };
+
+    const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setPageSize(Number(e.target.value));
+        setCurrentPage(0);
     };
 
     const handleSelectSalon = async (id: number) => {
@@ -156,6 +169,38 @@ const SalonList: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
+                
+                <div className="pagination-controls">
+                    <div className="page-size-selector">
+                        <label>Show: </label>
+                        <select value={pageSize} onChange={handlePageSizeChange}>
+                            <option value={5}>5 per page</option>
+                            <option value={10}>10 per page</option>
+                            <option value={20}>20 per page</option>
+                            <option value={50}>50 per page</option>
+                        </select>
+                    </div>
+
+                    <div className="page-navigation">
+                        <button 
+                            className="page-btn" 
+                            disabled={currentPage === 0} 
+                            onClick={() => setCurrentPage(prev => prev - 1)}
+                        >
+                            ◀ Previous
+                        </button>
+                        <span className="page-info">
+                            Page <strong>{currentPage + 1}</strong> of <strong>{totalPages === 0 ? 1 : totalPages}</strong>
+                        </span>
+                        <button 
+                            className="page-btn" 
+                            disabled={currentPage >= totalPages - 1 || totalPages === 0} 
+                            onClick={() => setCurrentPage(prev => prev + 1)}
+                        >
+                            Next ▶
+                        </button>
+                    </div>
+                </div>      
             </div>
 
             {/* Salon Details Section */}
